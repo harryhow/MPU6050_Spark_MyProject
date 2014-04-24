@@ -77,7 +77,7 @@ MPU6050 mpu;
 // uncomment "OUTPUT_READABLE_QUATERNION" if you want to see the actual
 // quaternion components in a [w, x, y, z] format (not best for parsing
 // on a remote host such as Processing or something though)
-//#define OUTPUT_READABLE_QUATERNION
+#define OUTPUT_READABLE_QUATERNION
 
 // uncomment "OUTPUT_READABLE_EULER" if you want to see Euler angles
 // (in degrees) calculated from the quaternions coming from the FIFO.
@@ -90,7 +90,7 @@ MPU6050 mpu;
 // from the FIFO. Note this also requires gravity vector calculations.
 // Also note that yaw/pitch/roll angles suffer from gimbal lock (for
 // more info, see: http://en.wikipedia.org/wiki/Gimbal_lock)
-#define OUTPUT_READABLE_YAWPITCHROLL
+//#define OUTPUT_READABLE_YAWPITCHROLL
 
 // uncomment "OUTPUT_READABLE_REALACCEL" if you want to see acceleration
 // components with gravity removed. This acceleration reference frame is
@@ -103,11 +103,11 @@ MPU6050 mpu;
 // components with gravity removed and adjusted for the world frame of
 // reference (yaw is relative to initial orientation, since no magnetometer
 // is present in this case). Could be quite handy in some cases.
-//#define OUTPUT_READABLE_WORLDACCEL
+#define OUTPUT_READABLE_WORLDACCEL
 
 // uncomment "OUTPUT_TEAPOT" if you want output that matches the
 // format used for the InvenSense teapot demo
-#define OUTPUT_TEAPOT
+//#define OUTPUT_TEAPOT
 
 
 
@@ -151,7 +151,11 @@ void dmpDataReady() {
 // ===                      INITIAL SETUP                       ===
 // ================================================================
 
+double quaternionW = 0;
+
 void setup() {
+
+    Spark.variable("quaternionW", &quaternionW, DOUBLE);
     // join I2C bus (I2Cdev library doesn't do this automatically)
     Wire.begin();
     //TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz)
@@ -231,9 +235,10 @@ void setup() {
 
 void loop() {
 
-    Serial.println("FIRE!");
+    
     // if programming failed, don't try to do anything
     if (!dmpReady) return;
+    Serial.println("fireeer!");
 
     // wait for MPU interrupt or extra packet(s) available
     while (!mpuInterrupt && fifoCount < packetSize) {
@@ -247,6 +252,9 @@ void loop() {
         // .
         // .
         // .
+        // harry: try to reset here
+        Serial.println("hang? reset!");
+        mpu.reset();
     }
 
     // reset interrupt flag and get INT_STATUS byte
@@ -282,9 +290,10 @@ void loop() {
             Serial.print("\t");
             Serial.print(q.x);
             Serial.print("\t");
-            Serial.print(q.y);
+            Serial.print(q.y);;
             Serial.print("\t");
             Serial.println(q.z);
+            quaternionW = q.w;
         #endif
 
         #ifdef OUTPUT_READABLE_EULER
